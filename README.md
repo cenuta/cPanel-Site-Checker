@@ -57,7 +57,7 @@
 
 1. Clone the repository to your server:  
    ```bash
-   git clone https://github.com/yourusername/cPanel-Site-Checker.git  
+   git clone https://github.com/cenuta/cPanel-Site-Checker.git  
    cd cPanel-Site-Checker  
    ```
 
@@ -80,7 +80,7 @@
 
 1. Depoyu sunucunuza klonlayın:  
    ```bash
-   git clone https://github.com/yourusername/cPanel-Site-Checker.git  
+   git clone https://github.com/cenuta/cPanel-Site-Checker.git  
    cd cPanel-Site-Checker  
    ```
 
