@@ -1,4 +1,3 @@
-%100 doğru sonuç vermemektedir. Geliştirme aşamasında olup, manuel kontrol önerilmektedir.
 
 # cPanel-Site-Checker
 
@@ -8,32 +7,50 @@
 
 **cPanel-Site-Checker** is a bash script designed to monitor and verify which sites are actively running on your cPanel-based server. It automates the process of checking all cPanel accounts, identifying whether the sites are served from your server or another one, and categorizing them accordingly.
 
+---
+
 ## Version History / Sürüm Geçmişi
 
-- **v1.1** (2024-12-04): 
-  - Ana domain kontrolü sağlandıktan sonra, yalnızca ana domain yönlü değilse addon domainler tek tek kontrol edilecektir.
-  - Hatalı yanıtlar ve dosya erişim sorunları için daha detaylı loglama eklendi.
+- **v1.2** (2024-12-04):  
+  - Ana ve addon domain kontrolleri tüm sunucu IP adreslerine karşı yapılarak doğruluk oranı artırıldı.  
+  - Aynı domain için ardışık tekrar eden uyumsuzluk kayıtları tek bir satıra indirildi.  
+  - Pasif siteler listesine eklemeden önce ikinci bir IP uyumluluğu kontrolü eklendi.  
+  - Uyumluluk kontrolleri için sunucudaki IP adresleri `ip addr` komutu ile alınıyor.  
 
-- **v1.0** (2024-12-01):
-  - Script, ana domainin çalışıp çalışmadığını kontrol eder ve sonuçları dosyalara yazar.
-  - Doğrulama dosyası oluşturulur ve ardından silinir.
- 
-  - 
+- **v1.1** (2024-12-03):  
+  - Ana domain kontrolü tamamlandıktan sonra addon domainler için detaylı kontrol eklendi.  
+  - Doğrulama dosyası (`cenuta-dogrulama.txt`) üzerinden kontrol yapılmaya devam edilmekte.  
+  - Daha detaylı hata logları ve performans iyileştirmeleri sağlandı.  
+
+- **v1.0** (2024-12-01):  
+  - Script, ana domainlerin çalışıp çalışmadığını kontrol ederek sonuçları ilgili dosyalara yazmaktadır.  
+  - İlk doğrulama yöntemi olarak doğrulama dosyası kullanıldı ve işlemler sonunda dosyalar otomatik olarak temizleniyor.  
+
+---
+
 ## Features / Özellikler
 
-- Scans all cPanel accounts automatically.  
-- Verifies the active status of domains by checking a custom validation file placed in the root directory.  
-- Categorizes sites as **Active**, **Inactive**, or **Error** based on the file validation response.  
-- Uses a custom **User-Agent** ("Cenuta Checker") for curl requests.  
-- Automatically cleans up the validation files after checking.  
-- Lightweight and efficient, designed for server administrators and hosting companies.  
+- **Multi-IP Compatibility:** Checks the compatibility of both main and addon domains with all IPs assigned to the server.  
+- **Optimized Logging:** Combines repeated mismatch logs into a single, cleaner entry for better readability.  
+- **Detailed Categorization:** Domains are categorized into **Active**, **Inactive**, and **Error** based on their validation status.  
+- **Automated Validation Process:** Creates and validates a temporary file (`cenuta-dogrulama.txt`) for each domain and removes it automatically after the check.  
+- **User-Friendly Output Files:** Generates organized logs:  
+  - `site_aktif.txt` for active domains.  
+  - `site_pasif.txt` for inactive domains.  
+  - `hatalar.txt` for errors.  
 
-- Tüm cPanel hesaplarını otomatik tarar.  
-- Ana domain üzerinden oluşturulan doğrulama dosyası ile sitenin sunucudan çalışıp çalışmadığını kontrol eder.  
-- Aktif (çalışan), pasif (başka sunucuda) ve hatalı (eksik veya yanlış yapılandırılmış) siteleri ayırır.  
-- Curl ile gönderilen isteklerde özel bir **User-Agent** ("Cenuta Checker") kullanarak kontrol yapar.  
-- Doğrulama işlemi sonunda oluşturulan dosyaları otomatik temizler.  
-- Kullanıcı dostu ve hızlıdır; sistem kaynaklarını verimli kullanır.  
+---
+
+- **Çoklu IP Uyumluluğu:** Ana ve addon domainlerin sunucuya bağlı tüm IP adresleriyle uyumluluğu kontrol edilir.  
+- **Optimize Edilmiş Loglama:** Aynı uyumsuzluk tekrarları tek bir satırda birleştirilerek daha okunabilir raporlama sağlanır.  
+- **Detaylı Kategorilendirme:** Domainler; **Aktif**, **Pasif** ve **Hatalı** olarak kategorilere ayrılır.  
+- **Otomatik Doğrulama Süreci:** Her domain için doğrulama dosyası oluşturulup, kontrol tamamlandıktan sonra otomatik olarak temizlenir.  
+- **Kullanıcı Dostu Çıktı Dosyaları:**  
+  - `site_aktif.txt`: Aktif domainler.  
+  - `site_pasif.txt`: Pasif domainler.  
+  - `hatalar.txt`: Hatalar.  
+
+---
 
 ## How It Works / Nasıl Çalışır
 
@@ -44,7 +61,7 @@
    - **Active**: Site is running from the server.  
    - **Inactive**: Site is likely hosted elsewhere.  
    - **Error**: The validation file could not be accessed or returned an unexpected result.  
-5. After the check, the validation files are automatically removed from the domains.
+5. After the check, the validation files are automatically removed from the domains.  
 
 ---
 
@@ -55,7 +72,9 @@
    - **Aktif**: Site sunucudan çalışıyor.  
    - **Pasif**: Site başka bir sunucuda barınıyor.  
    - **Hatalı**: Doğrulama dosyasına ulaşılamaz veya beklenmeyen bir sonuç dönülür.  
-5. Kontrol işlemi tamamlandıktan sonra, doğrulama dosyaları otomatik olarak silinir.
+5. Kontrol işlemi tamamlandıktan sonra, doğrulama dosyaları otomatik olarak silinir.  
+
+---
 
 ## Requirements / Gereksinimler
 
@@ -64,6 +83,8 @@
 
 - **Bash**: Script Bash ile yazılmıştır, bu yüzden çalışabilmesi için Linux tabanlı bir sunucuya (örneğin, CentOS, Ubuntu) ihtiyaç vardır.  
 - **cPanel/WHM**: Script, özellikle cPanel hesaplarıyla uyumlu olarak çalışacak şekilde tasarlanmıştır.
+
+---
 
 ## Installation / Kurulum
 
@@ -90,27 +111,6 @@
 
 ---
 
-1. Depoyu sunucunuza klonlayın:  
-   ```bash
-   git clone https://github.com/cenuta/cPanel-Site-Checker.git  
-   cd cPanel-Site-Checker  
-   ```
-
-2. Script'i çalıştırılabilir hale getirin:  
-   ```bash
-   chmod +x checker.sh  
-   ```
-
-3. Script'i çalıştırın:  
-   ```bash
-   ./checker.sh  
-   ```
-
-4. Sonuçları kontrol edin:  
-   - **`site_aktif.txt`**: Bu sunucuda çalışan siteler.  
-   - **`site_pasif.txt`**: Başka bir sunucuda barınan veya çalışmayan siteler.  
-   - **`hatalar.txt`**: Hatalar veya sorunlar yaşayan siteler.
-
 ## Example Output / Örnek Çıktı
 
 - **`site_aktif.txt`**:  
@@ -124,17 +124,6 @@
   - example4.com - user4: Error: 404 Not Found
 
 ---
-
-- **`site_aktif.txt`**:  
-  - example1.com - user1  
-  - example2.com - user2
-
-- **`site_pasif.txt`**:  
-  - example3.com - user3
-
-- **`hatalar.txt`**:  
-  - example4.com - user4: Hata: 404 Bulunamadı
-  - 
 
 ## Contact / İletişim
 
