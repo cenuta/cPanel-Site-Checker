@@ -31,25 +31,38 @@ for USER in $(/usr/local/cpanel/bin/whmapi1 listaccts | grep -oP '(?<=user: ).*'
     USER_HOME=$(grep "^$USER:" /etc/passwd | cut -d: -f6)
     PUBLIC_HTML="$USER_HOME/public_html"
 
-    # Doğrulama dosyasını oluştur
-    if [ -d "$PUBLIC_HTML" ]; then
-        echo "$VALIDATION_CONTENT" > "$PUBLIC_HTML/$VALIDATION_FILE"
-        echo "Doğrulama dosyası oluşturuldu: $PUBLIC_HTML/$VALIDATION_FILE"
-    else
-        echo "$DOMAIN - $USER için public_html dizini bulunamadı." >> $HATALI
-        continue
-    fi
-
-    # Doğrulama dosyasını test et
+    # Ana domainin yönlü olup olmadığını kontrol et
     URL="http://$DOMAIN/$VALIDATION_FILE"
-    RESPONSE=$(curl -s --max-time 5  --user-agent "Cenuta Checker" $URL)
+    RESPONSE=$(curl -s --max-time 5 --user-agent "Cenuta Checker" $URL)
 
+    # Eğer ana domain yönlü ise addon domainlerini kontrol etme
     if [ "$RESPONSE" == "$VALIDATION_CONTENT" ]; then
         echo "$DOMAIN - $USER aktif (site bu sunucudan çalışıyor)" >> $AKTIF
+        continue
     elif [ -z "$RESPONSE" ]; then
         echo "$DOMAIN - $USER pasif (dosya erişilemedi)" >> $PASIF
     else
         echo "$DOMAIN - $USER hatalı yanıt: $RESPONSE" >> $HATALI
+    fi
+
+    # Addon domainlerini kontrol et (sadece ana domain yönlü değilse)
+    ADDON_DOMAINS=$(/usr/local/cpanel/bin/whmapi1 addon_domains user=$USER | grep -oP '(?<=domain: ).*')
+
+    if [ ! -z "$ADDON_DOMAINS" ]; then
+        for ADDON in $ADDON_DOMAINS; do
+            echo "Addon Domain: $ADDON kontrol ediliyor..."
+
+            URL="http://$ADDON/$VALIDATION_FILE"
+            RESPONSE=$(curl -s --max-time 5 --user-agent "Cenuta Checker" $URL)
+
+            if [ "$RESPONSE" == "$VALIDATION_CONTENT" ]; then
+                echo "$ADDON - $USER aktif (site bu sunucudan çalışıyor)" >> $AKTIF
+            elif [ -z "$RESPONSE" ]; then
+                echo "$ADDON - $USER pasif (dosya erişilemedi)" >> $PASIF
+            else
+                echo "$ADDON - $USER hatalı yanıt: $RESPONSE" >> $HATALI
+            fi
+        done
     fi
 
     # Doğrulama dosyasını sil
