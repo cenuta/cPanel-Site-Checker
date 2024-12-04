@@ -35,11 +35,16 @@ for USER in $(/usr/local/cpanel/bin/whmapi1 listaccts | grep -oP '(?<=user: ).*'
     # .well-known dizini var mı, yoksa oluştur
     if [ ! -d "$WELL_KNOWN_DIR" ]; then
         mkdir -p "$WELL_KNOWN_DIR"
+        echo ".well-known dizini oluşturuldu: $WELL_KNOWN_DIR"
     fi
+
+    # Doğrulama dosyasını oluştur
+    echo "$VALIDATION_CONTENT" > "$WELL_KNOWN_DIR/cenuta-dogrulama.txt"
+    echo "Doğrulama dosyası oluşturuldu: $WELL_KNOWN_DIR/cenuta-dogrulama.txt"
 
     # Ana domainin yönlü olup olmadığını kontrol et
     URL="http://$DOMAIN/.well-known/cenuta-dogrulama.txt"
-    RESPONSE=$(curl -s --max-time 5 --user-agent "Cenuta Checker" $URL)
+    RESPONSE=$(curl -sL --max-time 5 --user-agent "Cenuta Checker" $URL)
 
     # Eğer ana domain yönlü ise addon domainlerini kontrol etme
     if [ "$RESPONSE" == "$VALIDATION_CONTENT" ]; then
@@ -59,7 +64,7 @@ for USER in $(/usr/local/cpanel/bin/whmapi1 listaccts | grep -oP '(?<=user: ).*'
             echo "Addon Domain: $ADDON kontrol ediliyor..."
 
             URL="http://$ADDON/.well-known/cenuta-dogrulama.txt"
-            RESPONSE=$(curl -s --max-time 5 --user-agent "Cenuta Checker" $URL)
+            RESPONSE=$(curl -sL --max-time 5 --user-agent "Cenuta Checker" $URL)
 
             if [ "$RESPONSE" == "$VALIDATION_CONTENT" ]; then
                 echo "$ADDON - $USER aktif (site bu sunucudan çalışıyor)" >> $AKTIF
