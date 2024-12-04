@@ -1,3 +1,4 @@
+%100 doğru sonuç vermemektedir. Geliştirme aşamasında olup, manuel kontrol önerilmektedir.
 
 # cPanel-Site-Checker
 
