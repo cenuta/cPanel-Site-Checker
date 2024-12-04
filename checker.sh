@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Doğrulama dosyasının adı ve içeriği
-VALIDATION_FILE="cenuta-dogrulama.txt"
+VALIDATION_FILE=".well-known/cenuta-dogrulama.txt"
 VALIDATION_CONTENT="Bu site Cenuta sunucularından çalışmaktadır."
 
 # Çıktı dosyaları
@@ -30,9 +30,15 @@ for USER in $(/usr/local/cpanel/bin/whmapi1 listaccts | grep -oP '(?<=user: ).*'
     # Kullanıcının ana dizin yolunu belirle
     USER_HOME=$(grep "^$USER:" /etc/passwd | cut -d: -f6)
     PUBLIC_HTML="$USER_HOME/public_html"
+    WELL_KNOWN_DIR="$PUBLIC_HTML/.well-known"
+
+    # .well-known dizini var mı, yoksa oluştur
+    if [ ! -d "$WELL_KNOWN_DIR" ]; then
+        mkdir -p "$WELL_KNOWN_DIR"
+    fi
 
     # Ana domainin yönlü olup olmadığını kontrol et
-    URL="http://$DOMAIN/$VALIDATION_FILE"
+    URL="http://$DOMAIN/.well-known/cenuta-dogrulama.txt"
     RESPONSE=$(curl -s --max-time 5 --user-agent "Cenuta Checker" $URL)
 
     # Eğer ana domain yönlü ise addon domainlerini kontrol etme
@@ -52,7 +58,7 @@ for USER in $(/usr/local/cpanel/bin/whmapi1 listaccts | grep -oP '(?<=user: ).*'
         for ADDON in $ADDON_DOMAINS; do
             echo "Addon Domain: $ADDON kontrol ediliyor..."
 
-            URL="http://$ADDON/$VALIDATION_FILE"
+            URL="http://$ADDON/.well-known/cenuta-dogrulama.txt"
             RESPONSE=$(curl -s --max-time 5 --user-agent "Cenuta Checker" $URL)
 
             if [ "$RESPONSE" == "$VALIDATION_CONTENT" ]; then
@@ -66,8 +72,8 @@ for USER in $(/usr/local/cpanel/bin/whmapi1 listaccts | grep -oP '(?<=user: ).*'
     fi
 
     # Doğrulama dosyasını sil
-    rm -f "$PUBLIC_HTML/$VALIDATION_FILE"
-    echo "Doğrulama dosyası silindi: $PUBLIC_HTML/$VALIDATION_FILE"
+    rm -f "$WELL_KNOWN_DIR/cenuta-dogrulama.txt"
+    echo "Doğrulama dosyası silindi: $WELL_KNOWN_DIR/cenuta-dogrulama.txt"
 done
 
 echo "Kontrol tamamlandı. Sonuçlar:"
