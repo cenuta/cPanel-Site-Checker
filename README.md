@@ -7,6 +7,17 @@
 
 **cPanel-Site-Checker** is a bash script designed to monitor and verify which sites are actively running on your cPanel-based server. It automates the process of checking all cPanel accounts, identifying whether the sites are served from your server or another one, and categorizing them accordingly.
 
+## Version History / Sürüm Geçmişi
+
+- **v1.1** (2024-12-04): 
+  - Ana domain kontrolü sağlandıktan sonra, yalnızca ana domain yönlü değilse addon domainler tek tek kontrol edilecektir.
+  - Hatalı yanıtlar ve dosya erişim sorunları için daha detaylı loglama eklendi.
+
+- **v1.0** (2024-12-01):
+  - Script, ana domainin çalışıp çalışmadığını kontrol eder ve sonuçları dosyalara yazar.
+  - Doğrulama dosyası oluşturulur ve ardından silinir.
+ 
+  - 
 ## Features / Özellikler
 
 - Scans all cPanel accounts automatically.  
