@@ -75,12 +75,12 @@
 
 2. Make the script executable:  
    ```bash
-   chmod +x site_check.sh  
+   chmod +x checker.sh  
    ```
 
 3. Run the script:  
    ```bash
-   ./site_check.sh  
+   ./checker.sh  
    ```
 
 4. Check the results:  
@@ -98,12 +98,12 @@
 
 2. Script'i çalıştırılabilir hale getirin:  
    ```bash
-   chmod +x site_check.sh  
+   chmod +x checker.sh  
    ```
 
 3. Script'i çalıştırın:  
    ```bash
-   ./site_check.sh  
+   ./checker.sh  
    ```
 
 4. Sonuçları kontrol edin:  
