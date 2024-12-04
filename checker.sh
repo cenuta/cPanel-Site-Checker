@@ -46,14 +46,36 @@ for USER in $(/usr/local/cpanel/bin/whmapi1 listaccts | grep -oP '(?<=user: ).*'
     URL="http://$DOMAIN/.well-known/cenuta-dogrulama.txt"
     RESPONSE=$(curl -sL --max-time 5 --user-agent "Cenuta Checker" $URL)
 
-    # Eğer ana domain yönlü ise addon domainlerini kontrol etme
+    # Ana domain kontrolü sonrası durum
     if [ "$RESPONSE" == "$VALIDATION_CONTENT" ]; then
         echo "$DOMAIN - $USER aktif (site bu sunucudan çalışıyor)" >> $AKTIF
-        continue
     elif [ -z "$RESPONSE" ]; then
         echo "$DOMAIN - $USER pasif (dosya erişilemedi)" >> $PASIF
     else
         echo "$DOMAIN - $USER hatalı yanıt: $RESPONSE" >> $HATALI
+        # Hatalı cevap alınan domain için IP uyumsuzluğu kontrolü
+        DOMAIN_IPS=$(dig +short $DOMAIN)
+        
+        # Sunucuda bulunan tüm aktif IP adreslerini al
+        SERVER_IPS=$(ip addr show | grep inet | grep -v inet6 | awk '{print $2}' | cut -d/ -f1)
+
+        # IP uyumsuzluklarını toplayalım
+        MISMATCHED_IPS=()
+
+        for DOMAIN_IP in $DOMAIN_IPS; do
+            for SERVER_IP in $SERVER_IPS; do
+                if [ "$DOMAIN_IP" != "$SERVER_IP" ]; then
+                    MISMATCHED_IPS+=("$DOMAIN_IP vs $SERVER_IP")
+                fi
+            done
+        done
+
+        if [ ${#MISMATCHED_IPS[@]} -gt 0 ]; then
+            MISMATCHED_IPS_STR=$(IFS=, ; echo "${MISMATCHED_IPS[*]}")
+            echo "$DOMAIN - $USER (Ana Domain) IP uyumsuzluğu: $MISMATCHED_IPS_STR" >> $PASIF
+        else
+            echo "$DOMAIN - $USER aktif (site bu sunucudan çalışıyor)" >> $AKTIF
+        fi
     fi
 
     # Addon domainlerini kontrol et (sadece ana domain yönlü değilse)
@@ -66,12 +88,31 @@ for USER in $(/usr/local/cpanel/bin/whmapi1 listaccts | grep -oP '(?<=user: ).*'
             URL="http://$ADDON/.well-known/cenuta-dogrulama.txt"
             RESPONSE=$(curl -sL --max-time 5 --user-agent "Cenuta Checker" $URL)
 
+            # Addon domain kontrolü sonrası durum
             if [ "$RESPONSE" == "$VALIDATION_CONTENT" ]; then
                 echo "$ADDON - $USER aktif (site bu sunucudan çalışıyor)" >> $AKTIF
             elif [ -z "$RESPONSE" ]; then
                 echo "$ADDON - $USER pasif (dosya erişilemedi)" >> $PASIF
             else
                 echo "$ADDON - $USER hatalı yanıt: $RESPONSE" >> $HATALI
+                # Hatalı cevap alınan addon domain için IP uyumsuzluğu kontrolü
+                ADDON_IPS=$(dig +short $ADDON)
+                
+                # Sunucuda bulunan tüm aktif IP adreslerini al
+                IP_MISMATCH=false
+                for ADDON_IP in $ADDON_IPS; do
+                    for SERVER_IP in $SERVER_IPS; do
+                        if [ "$ADDON_IP" != "$SERVER_IP" ]; then
+                            MISMATCHED_IPS+=("$ADDON_IP vs $SERVER_IP")
+                            IP_MISMATCH=true
+                        fi
+                    done
+                done
+
+                if [ "$IP_MISMATCH" = true ]; then
+                    MISMATCHED_IPS_STR=$(IFS=, ; echo "${MISMATCHED_IPS[*]}")
+                    echo "$ADDON - $USER (Addon Domain) IP uyumsuzluğu: $MISMATCHED_IPS_STR" >> $PASIF
+                fi
             fi
         done
     fi
